@@ -24,7 +24,7 @@ def make_car(desired_v:float=20, dt:float=0.1) -> dict:
     }
     return car_state_dictionary
 
-def update(car: dict, throttle_perc: float, mass: float = 1000, max_throttle_force: float = 5000, friction: float = .99, angle_speed: float = .4) -> None:
+def update(car: dict, throttle_perc: float, mass: float = 1000, max_throttle_force: float = 5000, friction: float = .2, angle_speed: float = .4) -> None:
         """
         Updates the car's state variables based on the throttle percentage.
         Use this function after finding throttle percentage to update the car's state variables.
@@ -37,12 +37,11 @@ def update(car: dict, throttle_perc: float, mass: float = 1000, max_throttle_for
         None, but updates the car's state variables
         """
         force = throttle_perc * max_throttle_force
-        car["a"] = ((force / mass)*friction - g*math.sin(degress_to_radians * car["angle"]))
-
+        car["a"] = ((force / mass) - friction - g*math.sin(degress_to_radians * car["angle"]))
         car["v"] += car["a"] * car["dt"]
         car["x"] += car["v"] * car["dt"]
         car["t"] += car["dt"]
-        if car["t"] > 100 and car["t"] < 120:
+        if car["t"] > 20 and car["t"] < 40:
                 car["angle"] += angle_speed * car["dt"]
         car["step"] += 1
 
