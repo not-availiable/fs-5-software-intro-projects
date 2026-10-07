@@ -4,7 +4,7 @@ import math
 degress_to_radians = 0.0174533
 g = 9.81
 
-def make_car(desired_v:float=20, dt:float=0.1) -> dict:
+def make_car(desired_v:float=20, desired_x:float=400, position_control:bool=False, dt:float=0.1) -> dict:
     """
     Generates a dictionary that holds all the car's values. Keeps track of state varaibles.
     """
@@ -15,6 +15,8 @@ def make_car(desired_v:float=20, dt:float=0.1) -> dict:
         "x" : 0, #position of your car
         "dt" : dt, #time step of your car, how much the time changes every time you update/step
         "desired_v" : desired_v, #desired velocity of your car, the velocity you want to maintain
+        "desired_x" : desired_x,
+        "position_control" : position_control,
         "step" : 0,
         "angle" : 0,
 
@@ -50,7 +52,7 @@ def calculate_desired_acceleration(car: dict, K_P: float, K_I: float = 0.0, K_D:
         #input: car["v"], car["desired_v"] (floats)
         #output: desired acceleration and error tuple(float, float)
         # pass # delete this line and write your PID code here
-        error = car["desired_v"] - car["v"]
+        error = car["desired_x"] - car["x"] if car["position_control"] else car["desired_v"] - car["v"]
         car["net_integral"] += error
         desired_acc = K_P * error + K_I * car["net_integral"]
         if car["error_prev"] != None:
