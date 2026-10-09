@@ -4,7 +4,7 @@ import math
 degress_to_radians = 0.0174533
 g = 9.81
 
-def make_car(desired_v:float=20, desired_x:float=400, position_control:bool=False, dt:float=0.1) -> dict:
+def make_car(desired_v:float=20, desired_x:float=400, position_control:bool=False, dt:float=0.1, angle_start_time:float=10, angle_end_time:float=20) -> dict:
     """
     Generates a dictionary that holds all the car's values. Keeps track of state varaibles.
     """
@@ -19,6 +19,8 @@ def make_car(desired_v:float=20, desired_x:float=400, position_control:bool=Fals
         "position_control" : position_control,
         "step" : 0,
         "angle" : 0,
+        "angle_start_time" : angle_start_time,
+        "angle_end_time" : angle_end_time,
 
         #hint: use these variables in the integral and derivative portion of your PID control (steps 5 and 6 )
         "error_prev" : None,
@@ -43,15 +45,15 @@ def update(car: dict, throttle_perc: float, mass: float = 1000, max_throttle_for
         car["v"] += car["a"] * car["dt"]
         car["x"] += car["v"] * car["dt"]
         car["t"] += car["dt"]
-        if car["t"] > 20 and car["t"] < 40:
+        if car["t"] > car["angle_start_time"] and car["t"] < car["angle_end_time"]:
                 car["angle"] += angle_speed * car["dt"]
         car["step"] += 1
 
 
-def calculate_desired_acceleration(car: dict, K_P: float, K_I: float = 0.0, K_D: float = 0.0, en_feedforward: bool = False) -> tuple[float, float]:
-        #input: car["v"], car["desired_v"] (floats)
+def calculate_desired_acceleration(car: dict, K_P: float=0.0, K_I: float = 0.0, K_D: float = 0.0, en_feedforward: bool = False) -> tuple[float, float]:
+        #input: car["v"], car["desired_v"], car["x"], car["desired_x"], car["angle"] (floats)
+        #input: en_feedforward (bool)
         #output: desired acceleration and error tuple(float, float)
-        # pass # delete this line and write your PID code here
         error = car["desired_x"] - car["x"] if car["position_control"] else car["desired_v"] - car["v"]
         car["net_integral"] += error
         desired_acc = K_P * error + K_I * car["net_integral"]
@@ -67,8 +69,7 @@ def calculate_desired_acceleration(car: dict, K_P: float, K_I: float = 0.0, K_D:
 def acceleration_to_throttle_percentage(acceleration_desired: float, mass: float = 1000, max_throttle_force: float = 5000) -> float:
         #input: desired_acceleration(float)
         #output: throttle percentage (float, -1 to 1)
-        # pass # delete this line and write your code to convert desired acceleration to throttle here
         max_acc = max_throttle_force/mass
-        np.clip(acceleration_desired, -max_acc, max_acc)
-        # print(str( np.interp(acceleration_desired, [-max_acc, max_acc], [-1, 1])))
-        return np.interp(acceleration_desired, [-max_acc, max_acc], [-1, 1])
+        throttle = acceleration_desired/max_acc
+        #cast to float so that if I were to write the throttle data to a file it wouldn't have np.float64 before every number
+        return float(np.clip(throttle, -1, 1))
